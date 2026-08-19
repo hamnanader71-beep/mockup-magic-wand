@@ -157,9 +157,10 @@ function Index() {
             Mockup Studio
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground md:text-base">
-            एक product photo upload करें और 10 styled mockups generate करें — flat lays, studio shots,
-            listing covers और model shots।
+            Upload one product photo and generate 10 styled mockups — flat lays, studio shots,
+            listing covers and model shots.
           </p>
+
         </header>
 
         <section className="mt-10 grid gap-6 md:grid-cols-[320px_1fr]">
