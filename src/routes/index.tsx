@@ -134,7 +134,7 @@ function Index() {
     if (!file || running) return;
     setRunning(true);
     const queue = [...indices];
-    const workers = Array.from({ length: 3 }, async () => {
+    const workers = Array.from({ length: Math.min(6, queue.length) }, async () => {
       while (queue.length) {
         const i = queue.shift();
         if (i === undefined) break;
