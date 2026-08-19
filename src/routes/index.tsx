@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { Download, ImagePlus, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import JSZip from "jszip";
 import { SCENES } from "@/lib/mockup-scenes";
 import { Button } from "@/components/ui/button";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,21 +39,67 @@ type Result = {
 const initialResults = (): Result[] =>
   SCENES.map((s) => ({ id: s.id, label: s.label, status: "pending" as const }));
 
+async function shrink(f: File): Promise<File> {
+  try {
+    const bmp = await createImageBitmap(f);
+    const max = 1024;
+    const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    if (scale === 1 && f.size < 1_500_000) return f;
+    const w = Math.round(bmp.width * scale);
+    const h = Math.round(bmp.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return f;
+    ctx.drawImage(bmp, 0, 0, w, h);
+    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
+    if (!blob) return f;
+    return new File([blob], "source.png", { type: "image/png" });
+  } catch {
+    return f;
+  }
+}
+
 function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [results, setResults] = useState<Result[]>(initialResults);
   const [running, setRunning] = useState(false);
+  const [zipping, setZipping] = useState(false);
   const [batch, setBatch] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  function pick(f: File | null) {
+  async function pick(f: File | null) {
     if (!f) return;
-    setFile(f);
     setPreview(URL.createObjectURL(f));
     setResults(initialResults());
     setBatch(0);
+    setFile(await shrink(f));
   }
+
+  async function downloadAll() {
+    const ready = results.filter((r) => r.src);
+    if (!ready.length || zipping) return;
+    setZipping(true);
+    try {
+      const zip = new JSZip();
+      ready.forEach((r, i) => {
+        const b64 = (r.src as string).split(",")[1] ?? "";
+        zip.file(`${String(i + 1).padStart(2, "0")}-${r.id}.png`, b64, { base64: true });
+      });
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mockups.zip";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } finally {
+      setZipping(false);
+    }
+  }
+
 
   async function generateOne(source: File, index: number) {
     const scene = SCENES[index];
@@ -86,7 +134,7 @@ function Index() {
     if (!file || running) return;
     setRunning(true);
     const queue = [...indices];
-    const workers = Array.from({ length: 3 }, async () => {
+    const workers = Array.from({ length: Math.min(6, queue.length) }, async () => {
       while (queue.length) {
         const i = queue.shift();
         if (i === undefined) break;
@@ -109,9 +157,10 @@ function Index() {
             Mockup Studio
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground md:text-base">
-            एक product photo upload करें और 10 styled mockups generate करें — flat lays, studio shots,
-            listing covers और model shots।
+            Upload one product photo and generate 10 styled mockups — flat lays, studio shots,
+            listing covers and model shots.
           </p>
+
         </header>
 
         <section className="mt-10 grid gap-6 md:grid-cols-[320px_1fr]">
@@ -161,6 +210,19 @@ function Index() {
                   Change image
                 </Button>
               ) : null}
+              <Button
+                variant="secondary"
+                className="w-full"
+                disabled={doneCount === 0 || zipping}
+                onClick={downloadAll}
+              >
+                {zipping ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                Download all images
+              </Button>
               <p className="pt-1 text-center text-xs text-muted-foreground">
                 {doneCount}/10 ready{batch > 0 ? ` · batch ${batch}` : ""}
               </p>
