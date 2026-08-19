@@ -30,8 +30,8 @@ type Result = {
   id: string;
   label: string;
   status: "pending" | "loading" | "done" | "error";
-  src?: string;
-  error?: string;
+  src?: string | undefined;
+  error?: string | undefined;
 };
 
 const initialResults = (): Result[] =>
@@ -55,6 +55,7 @@ function Index() {
 
   async function generateOne(source: File, index: number) {
     const scene = SCENES[index];
+    if (!scene) return;
     setResults((r) => r.map((x, i) => (i === index ? { ...x, status: "loading", error: undefined } : x)));
     try {
       const fd = new FormData();
