@@ -39,21 +39,67 @@ type Result = {
 const initialResults = (): Result[] =>
   SCENES.map((s) => ({ id: s.id, label: s.label, status: "pending" as const }));
 
+async function shrink(f: File): Promise<File> {
+  try {
+    const bmp = await createImageBitmap(f);
+    const max = 1024;
+    const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    if (scale === 1 && f.size < 1_500_000) return f;
+    const w = Math.round(bmp.width * scale);
+    const h = Math.round(bmp.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return f;
+    ctx.drawImage(bmp, 0, 0, w, h);
+    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
+    if (!blob) return f;
+    return new File([blob], "source.png", { type: "image/png" });
+  } catch {
+    return f;
+  }
+}
+
 function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [results, setResults] = useState<Result[]>(initialResults);
   const [running, setRunning] = useState(false);
+  const [zipping, setZipping] = useState(false);
   const [batch, setBatch] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  function pick(f: File | null) {
+  async function pick(f: File | null) {
     if (!f) return;
-    setFile(f);
     setPreview(URL.createObjectURL(f));
     setResults(initialResults());
     setBatch(0);
+    setFile(await shrink(f));
   }
+
+  async function downloadAll() {
+    const ready = results.filter((r) => r.src);
+    if (!ready.length || zipping) return;
+    setZipping(true);
+    try {
+      const zip = new JSZip();
+      ready.forEach((r, i) => {
+        const b64 = (r.src as string).split(",")[1] ?? "";
+        zip.file(`${String(i + 1).padStart(2, "0")}-${r.id}.png`, b64, { base64: true });
+      });
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mockups.zip";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } finally {
+      setZipping(false);
+    }
+  }
+
 
   async function generateOne(source: File, index: number) {
     const scene = SCENES[index];
