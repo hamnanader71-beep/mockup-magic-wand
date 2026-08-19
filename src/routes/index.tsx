@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { Download, ImagePlus, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import JSZip from "jszip";
 import { SCENES } from "@/lib/mockup-scenes";
 import { Button } from "@/components/ui/button";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
