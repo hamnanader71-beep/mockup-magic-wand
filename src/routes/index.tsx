@@ -210,6 +210,19 @@ function Index() {
                   Change image
                 </Button>
               ) : null}
+              <Button
+                variant="secondary"
+                className="w-full"
+                disabled={doneCount === 0 || zipping}
+                onClick={downloadAll}
+              >
+                {zipping ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                Download all images
+              </Button>
               <p className="pt-1 text-center text-xs text-muted-foreground">
                 {doneCount}/10 ready{batch > 0 ? ` · batch ${batch}` : ""}
               </p>
