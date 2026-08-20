@@ -65,6 +65,7 @@ function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [title, setTitle] = useState("");
+  const [extraPrompt, setExtraPrompt] = useState("");
   const [results, setResults] = useState<Result[]>(initialResults);
   const [running, setRunning] = useState(false);
   const [zipping, setZipping] = useState(false);
