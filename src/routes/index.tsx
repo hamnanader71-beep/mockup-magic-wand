@@ -206,6 +206,23 @@ function Index() {
               </p>
             </div>
 
+            <div className="mt-4">
+              <label htmlFor="extra-prompt" className="text-xs font-medium text-muted-foreground">
+                Extra prompt (optional)
+              </label>
+              <textarea
+                id="extra-prompt"
+                rows={3}
+                value={extraPrompt}
+                onChange={(e) => setExtraPrompt(e.target.value)}
+                placeholder="e.g. add a gift box and dried roses, pink background"
+                className="mt-1 w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Anything extra you want added to every mockup.
+              </p>
+            </div>
+
             <div className="mt-4 space-y-2">
               <Button
                 className="w-full"
