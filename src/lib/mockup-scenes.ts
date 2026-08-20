@@ -4,6 +4,19 @@ export type Scene = {
   prompt: string;
 };
 
+export function buildScenes(title: string): Scene[] {
+  const name = title.trim();
+  const t = name || "handmade product";
+  const headline = (name || "PRODUCT").toUpperCase();
+  return SCENES.map((s) => ({
+    ...s,
+    prompt: s.prompt
+      .replaceAll("__HEADLINE__", headline)
+      .replaceAll("__TITLE__", t)
+      .concat(name ? ` The product is a ${name}; any text in the image must refer to it correctly and never mention unrelated product types.` : ""),
+  }));
+}
+
 const KEEP =
   "Keep the product in the photo exactly identical to the uploaded image: same shape, colors, stitches, hardware and proportions. Do not redesign it. Photorealistic lifestyle product photography, soft natural light, warm neutral tones, high detail, square composition.";
 
@@ -26,7 +39,7 @@ export const SCENES: Scene[] = [
   {
     id: "pattern-cover",
     label: "Pattern cover",
-    prompt: `Marketing cover graphic on a cream background: the product on the right, with elegant dark brown serif headline text "CROCHET PATTERN" and a smaller subtitle line on the left, a small heart divider, refined boho e-commerce listing style. ${KEEP}`,
+    prompt: `Marketing cover graphic on a cream background: the product on the right, with elegant dark brown serif headline text "__HEADLINE__" and a smaller subtitle line on the left describing the __TITLE__, a small heart divider, refined boho e-commerce listing style. ${KEEP}`,
   },
   {
     id: "feature-callouts",
