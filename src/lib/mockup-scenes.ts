@@ -4,8 +4,9 @@ export type Scene = {
   prompt: string;
 };
 
-export function buildScenes(title: string): Scene[] {
+export function buildScenes(title: string, extra = ""): Scene[] {
   const name = title.trim();
+  const note = extra.trim();
   const t = name || "handmade product";
   const headline = (name || "PRODUCT").toUpperCase();
   return SCENES.map((s) => ({
@@ -13,7 +14,8 @@ export function buildScenes(title: string): Scene[] {
     prompt: s.prompt
       .replaceAll("__HEADLINE__", headline)
       .replaceAll("__TITLE__", t)
-      .concat(name ? ` The product is a ${name}; any text in the image must refer to it correctly and never mention unrelated product types.` : ""),
+      .concat(name ? ` The product is a ${name}; any text in the image must refer to it correctly and never mention unrelated product types.` : "")
+      .concat(note ? ` Additional user instructions (follow them while keeping the product identical): ${note}` : ""),
   }));
 }
 

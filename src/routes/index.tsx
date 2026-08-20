@@ -65,6 +65,7 @@ function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [title, setTitle] = useState("");
+  const [extraPrompt, setExtraPrompt] = useState("");
   const [results, setResults] = useState<Result[]>(initialResults);
   const [running, setRunning] = useState(false);
   const [zipping, setZipping] = useState(false);
@@ -103,7 +104,7 @@ function Index() {
 
 
   async function generateOne(source: File, index: number) {
-    const scene = buildScenes(title)[index];
+    const scene = buildScenes(title, extraPrompt)[index];
     if (!scene) return;
     setResults((r) => r.map((x, i) => (i === index ? { ...x, status: "loading", error: undefined } : x)));
     try {
@@ -202,6 +203,23 @@ function Index() {
               />
               <p className="mt-1 text-[11px] text-muted-foreground">
                 This title is used for the text shown on the mockups.
+              </p>
+            </div>
+
+            <div className="mt-4">
+              <label htmlFor="extra-prompt" className="text-xs font-medium text-muted-foreground">
+                Extra prompt (optional)
+              </label>
+              <textarea
+                id="extra-prompt"
+                rows={3}
+                value={extraPrompt}
+                onChange={(e) => setExtraPrompt(e.target.value)}
+                placeholder="e.g. add a gift box and dried roses, pink background"
+                className="mt-1 w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Anything extra you want added to every mockup.
               </p>
             </div>
 
