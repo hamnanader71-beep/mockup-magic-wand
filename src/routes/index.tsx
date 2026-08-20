@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { Download, ImagePlus, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import JSZip from "jszip";
-import { SCENES } from "@/lib/mockup-scenes";
+import { SCENES, buildScenes } from "@/lib/mockup-scenes";
 import { Button } from "@/components/ui/button";
 
 
@@ -64,6 +64,7 @@ async function shrink(f: File): Promise<File> {
 function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [title, setTitle] = useState("");
   const [results, setResults] = useState<Result[]>(initialResults);
   const [running, setRunning] = useState(false);
   const [zipping, setZipping] = useState(false);
@@ -102,7 +103,7 @@ function Index() {
 
 
   async function generateOne(source: File, index: number) {
-    const scene = SCENES[index];
+    const scene = buildScenes(title)[index];
     if (!scene) return;
     setResults((r) => r.map((x, i) => (i === index ? { ...x, status: "loading", error: undefined } : x)));
     try {
@@ -186,6 +187,23 @@ function Index() {
                 </span>
               )}
             </button>
+
+            <div className="mt-4">
+              <label htmlFor="product-title" className="text-xs font-medium text-muted-foreground">
+                Product title
+              </label>
+              <input
+                id="product-title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Crochet Phone Cover"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                This title is used for the text shown on the mockups.
+              </p>
+            </div>
 
             <div className="mt-4 space-y-2">
               <Button
