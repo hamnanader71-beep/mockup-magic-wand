@@ -104,7 +104,7 @@ function Index() {
 
 
   async function generateOne(source: File, index: number) {
-    const scene = buildScenes(title)[index];
+    const scene = buildScenes(title, extraPrompt)[index];
     if (!scene) return;
     setResults((r) => r.map((x, i) => (i === index ? { ...x, status: "loading", error: undefined } : x)));
     try {
